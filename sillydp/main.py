@@ -5,12 +5,40 @@ import os
 import torch.distributed as dist
 import wandb
 import torch
+import json
+from pathlib import Path
+from typing import Optional
 from transformers import LlamaConfig, LlamaForCausalLM
 from transformers import DataCollatorForLanguageModeling
 from torch.utils.data import DataLoader
 from datasets.distributed import split_dataset_by_node # type: ignore
 
 app = App()
+
+def get_default_llama_config():
+    return {
+        "architectures": [
+            "LlamaForCausalLM"
+        ],
+        "hidden_size": 128,
+        "intermediate_size": 512,
+        "num_attention_heads": 4,
+        "num_hidden_layers": 6,
+        "rms_norm_eps": 1e-05,
+        "use_cache": False
+    }
+
+def get_default_wandb_config():
+    return {
+        "nodes": 1,
+        "location": "local",
+        "backend": "nccl",
+        "measure_comms": True
+    }
+
+def load_config_from_file(config_path: str) -> dict:
+    with open(config_path, 'r') as f:
+        return json.load(f)
 
 @app.default
 def train_model(
@@ -25,13 +53,17 @@ def train_model(
     lr: float = 4e-4,
     steps: int = 10_000,
     dataset_path: str = "/mnt/hf-c4-tiny/datasets/PrimeIntellect/c4-tiny/en/save_to_disk",
-    llama_config: dict = None, # type: ignore
-    wandb_config: dict = None, # type: ignore
+    llama_config_file: Optional[str] = None,
+    wandb_config_file: Optional[str] = None,
 ):
+    # Load configurations
+    llama_config = load_config_from_file(llama_config_file) if llama_config_file else get_default_llama_config()
+    wandb_config = load_config_from_file(wandb_config_file) if wandb_config_file else get_default_wandb_config()
+
     set_seed_all(seed)
     local_rank = int(os.environ["LOCAL_RANK"])
     world_size = int(os.environ["WORLD_SIZE"])
-    
+
     assert batch_size % per_device_train_batch_size == 0
     gradient_accumulation_steps = batch_size / per_device_train_batch_size
 
