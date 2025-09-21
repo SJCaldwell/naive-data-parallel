@@ -252,43 +252,39 @@ def prepare_configs():
 @app.local_entrypoint()
 def small_single_node():
     """Run small model training on single node."""
-    prepare_configs.remote()
     train_single_node.remote(
         batch_size=128,
         lr=1e-3,
         steps=5000,
-        llama_config_path="/vol/configs/llama_default.json",
-        wandb_config_path="/vol/configs/wandb_default.json"
+        llama_config_path="/root/configs/llama_default.json",
+        wandb_config_path="/root/configs/wandb_default.json"
     )
 
 
 @app.local_entrypoint()
 def large_multi_node():
     """Run large model training on multi-node cluster."""
-    prepare_configs.remote()
     train_multi_node.remote(
         batch_size=1024,
         lr=4e-4,
         steps=10000,
-        llama_config_path="/vol/configs/llama_large.json",
-        wandb_config_path="/vol/configs/wandb_default.json"
+        llama_config_path="/root/configs/llama_large.json",
+        wandb_config_path="/root/configs/wandb_default.json"
     )
 
 
 @app.local_entrypoint()
 def benchmark():
     """Run a quick benchmark of multi-node performance."""
-    prepare_configs.remote()
     benchmark_multi_node.remote()
 
 
 @app.local_entrypoint()
 def main():
     """Default: run medium-scale multi-node training."""
-    prepare_configs.remote()
     train_multi_node.remote(
-        llama_config_path="/vol/configs/llama_default.json",
-        wandb_config_path="/vol/configs/wandb_default.json"
+        llama_config_path="/root/configs/llama_default.json",
+        wandb_config_path="/root/configs/wandb_default.json"
     )
 
 
