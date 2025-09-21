@@ -2,7 +2,7 @@ import random
 from datasets import load_from_disk # type: ignore
 import numpy as np
 import torch
-import datetime
+from datetime import datetime
 import uuid
 import torch.distributed as dist
 import os
