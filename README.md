@@ -111,6 +111,8 @@ For large-scale distributed training on Modal's cloud infrastructure, use the pr
 1. Install Modal CLI: `pip install modal`
 2. Set up Modal account: `modal setup`
 3. Create W&B secret: `modal secret create wandb-secret WANDB_API_KEY=your_key_here`
+4. Create modal volume for hf-c4-tiny dataset: `modal run scripts/setup_data_volume.py`
+
 
 ### Usage Examples
 
@@ -135,11 +137,5 @@ modal run -m scripts.train_modal::benchmark
 ```
 
 ### Modal Configuration
-
-The script automatically:
-- Uses your existing `hf-c4-tiny` Modal volume for dataset storage
-- Creates config files with your default settings
-- Handles multi-node coordination and RDMA networking
-- Integrates with W&B for logging
 
 You can modify `n_nodes` and `n_proc_per_node` in the script for different cluster sizes.
