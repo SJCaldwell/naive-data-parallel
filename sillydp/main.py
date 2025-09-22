@@ -63,11 +63,12 @@ def train_model(
     set_seed_all(seed)
     local_rank = int(os.environ["LOCAL_RANK"])
     world_size = int(os.environ["WORLD_SIZE"])
+    global_rank = int(os.environ["RANK"])
 
     assert batch_size % per_device_train_batch_size == 0
     gradient_accumulation_steps = batch_size / per_device_train_batch_size
 
-    if local_rank == 0:
+    if global_rank == 0:
         run_name = create_run_name("comm-measurement", wandb_config)
         wandb.init(project=project, name=run_name, config=wandb_config)
     device = torch.device(f"cuda:{local_rank}") if torch.cuda.is_available() else torch.device("cpu")
@@ -75,7 +76,7 @@ def train_model(
     tokenized_ds = get_tokenized_dataset(dataset_path=dataset_path, tokenizer=tokenizer)
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
     train_dataset = split_dataset_by_node(
-        tokenized_ds, world_size=world_size, rank=local_rank
+        tokenized_ds, world_size=world_size, rank=global_rank
     )
     def collate_func(batch):
         padded = tokenizer.pad(
@@ -118,7 +119,7 @@ def train_model(
             dp_model.sync_gradients()
             optimizer.step()
             optimizer.zero_grad()
-            if local_rank == 0:
+            if global_rank == 0:
                 wandb.log({"loss": loss.item() * gradient_accumulation_steps, "step": i, "avg_sync_time_seconds": dp_model.avg_sync_time, "perplexity": torch.exp(loss).item()})
                 num_batches += 1
     print(f"Average sync time: {dp_model.avg_sync_time}")

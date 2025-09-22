@@ -19,8 +19,8 @@ VOLUME_NAME = "hf-c4-tiny"
 
 # Cluster configuration
 n_nodes = 2
-n_proc_per_node = 2  # 2 GPUs per node for multi-node (4 total)
-single_node_gpus = 2  # 2 GPUs for single node training
+n_proc_per_node = 1  # 1 GPUs per node for multi-node (2 total)
+single_node_gpus = 4  # 2 GPUs for single node training
 
 # Base image with dependencies
 base_image = (
@@ -268,7 +268,7 @@ def large_multi_node():
         batch_size=1024,
         lr=4e-4,
         steps=10000,
-        llama_config_path="/root/configs/llama_large.json",
+        llama_config_path="/root/configs/llama_default.json",
         wandb_config_path="/root/configs/wandb_default.json"
     )
 
